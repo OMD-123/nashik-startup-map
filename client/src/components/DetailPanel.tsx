@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import type { Company } from "../types";
-import { companyLetter } from "../utils";
+import { companyLetter, pinColor } from "../utils";
 
 interface Props {
   company: Company | null;
@@ -19,7 +19,7 @@ export function DetailPanel({ company, onClose }: Props) {
 
   if (!company) return null;
   const c = company;
-  const color = c.type === "startup" ? "#ff6a1a" : "#0a2540";
+  const color = pinColor(c);
 
   return (
     <>

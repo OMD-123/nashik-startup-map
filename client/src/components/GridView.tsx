@@ -1,5 +1,5 @@
 import type { Company } from "../types";
-import { companyLetter } from "../utils";
+import { companyLetter, pinColor } from "../utils";
 
 interface Props {
   companies: Company[];
@@ -56,8 +56,8 @@ function CompanyGridCard({ c, onClick }: { c: Company; onClick: () => void }) {
           width: 38,
           height: 38,
           borderRadius: "50%",
-          background: "#0a2540",
-          color: "#ff6a1a",
+          background: pinColor(c),
+          color: "#ffffff",
           fontWeight: 800,
           display: "flex",
           alignItems: "center",

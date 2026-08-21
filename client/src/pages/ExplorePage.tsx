@@ -5,8 +5,8 @@ import { fetchCompanies, fetchMeta } from "../api";
 import { MapView } from "../components/MapView";
 import { GridView } from "../components/GridView";
 import { ResultCounter } from "../components/ResultCounter";
-import { AdsStrip } from "../components/AdsStrip";
 import { DetailPanel } from "../components/DetailPanel";
+import { BoostModal } from "../components/BoostModal";
 
 const DEFAULTS: FilterState = {
   type: "",
@@ -24,6 +24,7 @@ export function ExplorePage() {
   const [filters, setFilters] = useState<FilterState>(DEFAULTS);
   const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [boostOpen, setBoostOpen] = useState(false);
 
   useEffect(() => {
     fetchMeta().then(setMeta);
@@ -43,6 +44,13 @@ export function ExplorePage() {
       .finally(() => setLoading(false));
   }, [filters]);
 
+  // If user came from /jobs?company=..., preselect that pin
+  useEffect(() => {
+    const sp = new URLSearchParams(window.location.search);
+    const cid = sp.get("company");
+    if (cid && companies.some((c) => c.id === cid)) setSelectedId(cid);
+  }, [companies]);
+
   const update = (next: Partial<FilterState>) =>
     setFilters((f) => ({ ...f, ...next }));
   const reset = () => setFilters(DEFAULTS);
@@ -51,11 +59,11 @@ export function ExplorePage() {
     () => companies.find((c) => c.id === selectedId) ?? null,
     [companies, selectedId]
   );
-
   const counter = useMemo(() => companies.length, [companies]);
 
   return (
     <div className="explore-page">
+      {/* ---------- Floating top toolbar (wider) ---------- */}
       <div className="toolbar" role="search">
         <Link to="/" className="brand" style={{ textDecoration: "none" }}>
           <span className="pin" aria-hidden />
@@ -103,6 +111,15 @@ export function ExplorePage() {
           </select>
         </div>
 
+        <label className="toolbar-check">
+          <input
+            type="checkbox"
+            checked={filters.hiring}
+            onChange={(e) => update({ hiring: e.target.checked })}
+          />
+          <span>Hiring now</span>
+        </label>
+
         <div className="toggle" role="tablist">
           <button
             className={filters.view === "map" ? "active" : ""}
@@ -122,7 +139,15 @@ export function ExplorePage() {
           </button>
         </div>
 
-        <button className="btn-boost" title="Boost your company" onClick={() => alert("Boost — coming soon")}>
+        <Link to="/jobs" className="btn-jobs" style={{ textDecoration: "none" }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <rect x="3" y="7" width="18" height="13" rx="2" />
+            <path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+          </svg>
+          Jobs
+        </Link>
+
+        <button className="btn-boost" title="Boost your company" onClick={() => setBoostOpen(true)}>
           <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z"/></svg>
           Boost
         </button>
@@ -151,9 +176,8 @@ export function ExplorePage() {
         <GridView companies={companies} onSelect={setSelectedId} />
       )}
 
-      <AdsStrip />
-
       <DetailPanel company={selected} onClose={() => setSelectedId(null)} />
+      <BoostModal open={boostOpen} onClose={() => setBoostOpen(false)} />
 
       <style>{`
         .explore-page {
@@ -168,6 +192,33 @@ export function ExplorePage() {
           inset: 0;
           background: #dbeafe;
         }
+        .toolbar-check {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          padding: 8px 14px;
+          border-radius: 9999px;
+          background: #fff7ed;
+          border: 1px solid #fed7aa;
+          font-size: 13px;
+          font-weight: 600;
+          color: #9a3412;
+          cursor: pointer;
+        }
+        .toolbar-check input { accent-color: #ff6a1a; }
+        .btn-jobs {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          padding: 10px 16px;
+          border-radius: 9999px;
+          background: #0a2540;
+          color: #ffffff;
+          font-weight: 700;
+          font-size: 13px;
+          white-space: nowrap;
+        }
+        .btn-jobs:hover { background: #163a5f; }
       `}</style>
     </div>
   );

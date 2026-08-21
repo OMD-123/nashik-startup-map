@@ -85,12 +85,23 @@ body {
   padding: 8px 10px 0 0 !important;
 }
 
-/* ---- The signature pin: white circle, brand-color letter ---- */
+/* ---- Pin wrapper (company pin + job-count badge below) ---- */
+.nashik-pin-wrap {
+  position: relative;
+  width: 44px;
+  height: 50px;
+  pointer-events: auto;
+}
+.nashik-pin-wrap.selected {
+  z-index: 9999;
+}
+
+/* ---- The signature pin: vibrant full-color circle with letter ---- */
 .nashik-pin {
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  background: #ffffff;
+  /* color & bg-color are set inline from JS (per-company brand color) */
   border: 2px solid #ffffff;
   box-shadow:
     0 4px 10px rgba(15, 23, 42, 0.25),
@@ -100,28 +111,57 @@ body {
   justify-content: center;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
   cursor: pointer;
-  color: #ff6a1a;          /* default saffron */
+  color: #ffffff;
   font-weight: 800;
   font-size: 15px;
   letter-spacing: -0.02em;
   line-height: 1;
 }
 .nashik-pin:hover {
-  transform: scale(1.18);
+  transform: scale(1.22);
   z-index: 1000;
   box-shadow:
-    0 8px 20px rgba(15, 23, 42, 0.35),
-    0 0 0 3px rgba(255, 106, 26, 0.4);
+    0 8px 22px rgba(15, 23, 42, 0.35),
+    0 0 0 3px rgba(255, 255, 255, 0.85),
+    0 0 0 5px currentColor;
 }
 .nashik-pin.selected {
-  transform: scale(1.25);
+  transform: scale(1.3);
   z-index: 9999;
   box-shadow:
-    0 0 0 4px rgba(255, 106, 26, 0.45),
-    0 8px 20px rgba(15, 23, 42, 0.35);
+    0 0 0 4px rgba(255, 255, 255, 0.95),
+    0 0 0 6px currentColor,
+    0 8px 22px rgba(15, 23, 42, 0.4);
 }
-.nashik-pin.startup { color: #ff6a1a; }
-.nashik-pin.company { color: #0a2540; }
+
+/* ---- Job count badge below each pin ---- */
+.nashik-jobs-count {
+  position: absolute;
+  top: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 9999px;
+  background: #0f172a;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.4);
+  pointer-events: none;
+  letter-spacing: -0.02em;
+}
+.nashik-pin-wrap:hover .nashik-jobs-count {
+  background: #ff6a1a;
+}
+.nashik-pin-wrap.selected .nashik-jobs-count {
+  background: #ff6a1a;
+}
 
 /* "hiring" pill at bottom-right of pin */
 .nashik-pin.hiring {
@@ -142,20 +182,21 @@ body {
 /* ---- Floating top bar (toolbar) ---- */
 .toolbar {
   position: absolute;
-  top: 16px;
-  left: 50%;
-  transform: translateX(-50%);
+  top: 12px;
+  left: 12px;
+  right: 12px;
   z-index: 1000;
   display: flex;
   align-items: center;
   gap: 6px;
   padding: 6px 8px 6px 14px;
   background: #ffffff;
-  border-radius: 9999px;
+  border-radius: 16px;
   box-shadow:
     0 6px 20px rgba(15, 23, 42, 0.10),
     0 2px 4px rgba(15, 23, 42, 0.06);
-  width: min(1180px, calc(100% - 32px));
+  width: min(1480px, calc(100% - 24px));
+  margin: 0 auto;
   overflow-x: auto;
   scrollbar-width: none;
   white-space: nowrap;
@@ -367,48 +408,6 @@ body {
   color: #94a3b8;
   border-top: 1px solid #e2e8f0;
   padding-top: 6px;
-}
-
-/* ---- Bottom ads strip ---- */
-.ads-strip {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 999;
-  background: linear-gradient(to top, rgba(255,255,255,0.95) 50%, rgba(255,255,255,0));
-  padding: 24px 16px 16px;
-  display: flex;
-  gap: 8px;
-  align-items: flex-end;
-  justify-content: center;
-  pointer-events: none;
-}
-.ads-strip > * { pointer-events: auto; }
-.ads-card {
-  background: #ffffff;
-  border-radius: 12px;
-  padding: 8px 12px;
-  font-size: 11px;
-  color: #64748b;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 4px 10px rgba(15,23,42,0.06);
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 60px;
-  max-width: 80px;
-  text-align: center;
-  align-items: center;
-}
-.ads-card .label {
-  font-size: 9px;
-  background: #f1f5f9;
-  color: #64748b;
-  padding: 1px 5px;
-  border-radius: 4px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
 }
 
 /* ---- Grid (when Map→Grid toggle) ---- */

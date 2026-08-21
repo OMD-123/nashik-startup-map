@@ -13,12 +13,14 @@ Inspired by [bangalorestartupmap.com](https://www.bangalorestartupmap.com/). Re-
 
 ## ✨ Features
 
-- 🗺️ **Interactive map** of all Nashik startups & companies (Leaflet + OpenStreetMap, marker clustering)
-- 🔎 **Full-text search** across name, sector, area, and open roles
-- 🎯 **Multi-filter** by type (startup / company), sector, stage, area, and "hiring now"
-- 👁 **Three views** — Map, List, and Grid — toggle instantly
-- 📊 **Live stats** — total, hiring, sectors, areas
-- 📝 **Community submissions** — anyone can submit a missing company
+- 🗺️ **Interactive map** of all Nashik startups & companies (Leaflet + OpenStreetMap, every pin separate — no clustering)
+- 💼 **Daily job board** — 193 open roles across all companies, filterable by Fresher / Internship / Remote / sector / area / company type
+- 🔎 **Full-text search** across name, sector, area, open roles, and skills
+- 🎯 **Multi-filter** — type (startup / company), sector, stage, area, hiring, fresher, internship, remote
+- 👁 **Three views** — Map, List, Grid — toggle instantly
+- 📊 **Live stats** — total companies, jobs, hiring, sectors, areas
+- 💳 **Boost payment flow** — 3 plans (₹499 / ₹1,499 / ₹4,999), simulated Razorpay/Stripe checkout, pin gets highlighted after successful payment
+- 📝 **Community submissions** — anyone can submit a missing company or job
 - 📱 **Responsive** — works from phone to desktop
 - 💨 **Auto-fly** — click a list row or grid card, the map flies to that pin
 

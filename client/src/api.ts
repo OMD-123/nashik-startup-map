@@ -1,4 +1,4 @@
-import type { Company, Meta, Stats } from "./types";
+import type { Company, Job, Meta, Stats } from "./types";
 
 const BASE = "/api";
 
@@ -30,4 +30,15 @@ export async function submitCompany(payload: Record<string, unknown>) {
   });
   if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
   return r.json();
+}
+
+export async function fetchJobs(params: Record<string, string | boolean | undefined>): Promise<Job[]> {
+  const qs = new URLSearchParams();
+  Object.entries(params).forEach(([k, v]) => {
+    if (v === undefined || v === "" || v === false) return;
+    qs.set(k, String(v));
+  });
+  const url = qs.toString() ? `${BASE}/jobs?${qs}` : `${BASE}/jobs`;
+  const data = await getJson<{ items: Job[]; count: number }>(url);
+  return data.items;
 }

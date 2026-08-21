@@ -28,6 +28,7 @@ export interface Stats {
   hiring: number;
   sectors: number;
   areas: number;
+  jobs?: number;
   bySector: Record<string, number>;
   byArea: Record<string, number>;
 }
@@ -51,3 +52,30 @@ export const DEFAULT_FILTERS: FilterState = {
   q: "",
   view: "map",
 };
+
+export interface Job {
+  id: string;
+  title: string;
+  companyId: string;
+  companyName: string;
+  companyWebsite: string;
+  companyType: "startup" | "company";
+  sector: string;
+  stage: string;
+  area: string;
+  isIntern: boolean;
+  isFresher: boolean;
+  remote: boolean;
+  postedDaysAgo: number;
+  salaryLpa: { min: number; max: number; period: string };
+}
+
+export interface JobFilters {
+  q: string;
+  sector: string;
+  area: string;
+  type: string;
+  fresher: boolean;
+  intern: boolean;
+  remote: boolean;
+}
