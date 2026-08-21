@@ -3,10 +3,10 @@ import { companyLetter } from "../utils";
 
 interface Props {
   companies: Company[];
-  loading?: boolean;
+  onSelect?: (id: string) => void;
 }
 
-export function GridView({ companies }: Props) {
+export function GridView({ companies, onSelect }: Props) {
   if (companies.length === 0) {
     return (
       <div className="grid-overlay">
@@ -26,30 +26,29 @@ export function GridView({ companies }: Props) {
         }}
       >
         {companies.map((c) => (
-          <CompanyGridCard key={c.id} c={c} />
+          <CompanyGridCard key={c.id} c={c} onClick={() => onSelect?.(c.id)} />
         ))}
       </div>
     </div>
   );
 }
 
-function CompanyGridCard({ c }: { c: Company }) {
+function CompanyGridCard({ c, onClick }: { c: Company; onClick: () => void }) {
   return (
-    <a
-      href={c.website || "#"}
-      target="_blank"
-      rel="noreferrer"
+    <button
+      onClick={onClick}
       style={{
         background: "#ffffff",
         borderRadius: 14,
         padding: 14,
-        textDecoration: "none",
+        textAlign: "left",
         color: "#0f172a",
         boxShadow: "0 1px 3px rgba(15,23,42,0.05)",
         border: "1px solid #e2e8f0",
         display: "flex",
         gap: 10,
         alignItems: "flex-start",
+        cursor: "pointer",
       }}
     >
       <div
@@ -89,6 +88,6 @@ function CompanyGridCard({ c }: { c: Company }) {
           {c.description}
         </p>
       </div>
-    </a>
+    </button>
   );
 }

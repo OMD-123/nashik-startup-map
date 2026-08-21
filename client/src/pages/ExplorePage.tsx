@@ -6,6 +6,7 @@ import { MapView } from "../components/MapView";
 import { GridView } from "../components/GridView";
 import { ResultCounter } from "../components/ResultCounter";
 import { AdsStrip } from "../components/AdsStrip";
+import { DetailPanel } from "../components/DetailPanel";
 
 const DEFAULTS: FilterState = {
   type: "",
@@ -22,6 +23,7 @@ export function ExplorePage() {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [filters, setFilters] = useState<FilterState>(DEFAULTS);
   const [loading, setLoading] = useState(true);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchMeta().then(setMeta);
@@ -45,11 +47,15 @@ export function ExplorePage() {
     setFilters((f) => ({ ...f, ...next }));
   const reset = () => setFilters(DEFAULTS);
 
+  const selected = useMemo(
+    () => companies.find((c) => c.id === selectedId) ?? null,
+    [companies, selectedId]
+  );
+
   const counter = useMemo(() => companies.length, [companies]);
 
   return (
     <div className="explore-page">
-      {/* ---------- Floating top toolbar ---------- */}
       <div className="toolbar" role="search">
         <Link to="/" className="brand" style={{ textDecoration: "none" }}>
           <span className="pin" aria-hidden />
@@ -70,54 +76,30 @@ export function ExplorePage() {
         </div>
 
         <div className="select-wrap">
-          <select
-            aria-label="All types"
-            value={filters.type}
-            onChange={(e) => update({ type: e.target.value })}
-          >
+          <select aria-label="All types" value={filters.type} onChange={(e) => update({ type: e.target.value })}>
             <option value="">All types</option>
-            {meta?.types.map((t) => (
-              <option key={t} value={t}>{t}</option>
-            ))}
+            {meta?.types.map((t) => <option key={t} value={t}>{t}</option>)}
           </select>
         </div>
 
         <div className="select-wrap">
-          <select
-            aria-label="All areas"
-            value={filters.area}
-            onChange={(e) => update({ area: e.target.value })}
-          >
+          <select aria-label="All areas" value={filters.area} onChange={(e) => update({ area: e.target.value })}>
             <option value="">All areas</option>
-            {meta?.areas.map((a) => (
-              <option key={a} value={a}>{a}</option>
-            ))}
+            {meta?.areas.map((a) => <option key={a} value={a}>{a}</option>)}
           </select>
         </div>
 
         <div className="select-wrap">
-          <select
-            aria-label="All stages"
-            value={filters.stage}
-            onChange={(e) => update({ stage: e.target.value })}
-          >
+          <select aria-label="All stages" value={filters.stage} onChange={(e) => update({ stage: e.target.value })}>
             <option value="">All stages</option>
-            {meta?.stages.map((s) => (
-              <option key={s} value={s}>{s}</option>
-            ))}
+            {meta?.stages.map((s) => <option key={s} value={s}>{s}</option>)}
           </select>
         </div>
 
         <div className="select-wrap">
-          <select
-            aria-label="All sectors"
-            value={filters.sector}
-            onChange={(e) => update({ sector: e.target.value })}
-          >
+          <select aria-label="All sectors" value={filters.sector} onChange={(e) => update({ sector: e.target.value })}>
             <option value="">All sectors</option>
-            {meta?.sectors.map((s) => (
-              <option key={s} value={s}>{s}</option>
-            ))}
+            {meta?.sectors.map((s) => <option key={s} value={s}>{s}</option>)}
           </select>
         </div>
 
@@ -150,10 +132,8 @@ export function ExplorePage() {
         </Link>
       </div>
 
-      {/* ---------- Result counter ---------- */}
       <ResultCounter count={counter} loading={loading} />
 
-      {/* ---------- Get job alerts ---------- */}
       <button
         className="job-alerts"
         onClick={() => alert("Job alerts — coming soon")}
@@ -165,15 +145,15 @@ export function ExplorePage() {
         Get job alerts
       </button>
 
-      {/* ---------- Map OR Grid ---------- */}
       {filters.view === "map" ? (
-        <MapView companies={companies} />
+        <MapView companies={companies} selectedId={selectedId} onSelect={setSelectedId} />
       ) : (
-        <GridView companies={companies} />
+        <GridView companies={companies} onSelect={setSelectedId} />
       )}
 
-      {/* ---------- Bottom ad strip ---------- */}
       <AdsStrip />
+
+      <DetailPanel company={selected} onClose={() => setSelectedId(null)} />
 
       <style>{`
         .explore-page {
@@ -181,10 +161,12 @@ export function ExplorePage() {
           height: 100vh;
           width: 100vw;
           overflow: hidden;
+          background: #dbeafe;
         }
         .leaflet-container {
           position: absolute;
           inset: 0;
+          background: #dbeafe;
         }
       `}</style>
     </div>
