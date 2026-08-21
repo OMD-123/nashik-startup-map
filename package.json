@@ -1,0 +1,27 @@
+{
+  "name": "nashik-startup-map",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Nashik Startup & Company Map — explore startups, businesses, and companies in Nashik for students and job seekers.",
+  "scripts": {
+    "dev": "concurrently \"npm --prefix server run dev\" \"npm --prefix client run dev\"",
+    "build": "npm run build --prefix client",
+    "start": "npm run start --prefix server"
+  },
+  "devDependencies": {
+    "@types/leaflet": "^1.9.22",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
+    "concurrently": "^9.2.4"
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "leaflet": "^1.9.4",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "react-router-dom": "^7.18.2",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^7.0.2"
+  }
+}
