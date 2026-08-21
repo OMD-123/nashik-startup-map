@@ -32,6 +32,24 @@ function buildIcon(c: Company, isSelected: boolean): L.DivIcon {
   });
 }
 
+
+function escapeHtml(value: string): string {
+  return value.replace(/[&<>"\']/g, (char) => {
+    if (char === "&") return "&amp;";
+    if (char === "<") return "&lt;";
+    if (char === ">") return "&gt;";
+    if (char === "\"") return "&quot;";
+    return "&#39;";
+  });
+}
+
+function buildPopupHtml(c: Company): string {
+  const roles = c.roles.slice(0, 3).map((role) => `<span class="popup-role">${escapeHtml(role)}</span>`).join("");
+  const moreRoles = c.roles.length > 3 ? `<span class="popup-role popup-role-more">+${c.roles.length - 3} more</span>` : "";
+  const website = /^https?:\/\//i.test(c.website) ? `<a href="${escapeHtml(c.website)}" target="_blank" rel="noreferrer">Website <span aria-hidden="true">↗</span></a>` : "";
+  return `<div class="nashik-map-popup"><div class="popup-title-row"><div><div class="popup-kicker">${escapeHtml(c.type)} · ${escapeHtml(c.area)}</div><div class="popup-company-name">${escapeHtml(c.name)}</div></div>${c.hiring ? `<span class="popup-hiring">Hiring</span>` : ""}</div><div class="popup-sector">${escapeHtml(c.sector)} · ${escapeHtml(c.stage)}</div><p class="popup-description">${escapeHtml(c.description)}</p>${c.roles.length ? `<div class="popup-role-list">${roles}${moreRoles}</div>` : ""}<div class="popup-actions">${website}<a href="https://www.openstreetmap.org/?mlat=${c.lat}&mlon=${c.lng}#map=15/${c.lat}/${c.lng}" target="_blank" rel="noreferrer">Directions <span aria-hidden="true">↗</span></a></div></div>`;
+}
+
 /* ---------- Cluster icon — single number = company count ---------- */
 function buildClusterIcon(cluster: L.MarkerCluster): L.DivIcon {
   const markers = cluster.getAllChildMarkers();
@@ -131,6 +149,7 @@ function ClusteredMarkers({
     companies.forEach((c) => {
       const m = L.marker([c.lat, c.lng], { icon: buildIcon(c, c.id === selectedId) });
       (m.options as { __company?: Company }).__company = c;
+      m.bindPopup(buildPopupHtml(c), { className: "nashik-popup", maxWidth: 300, minWidth: 240, autoPanPadding: [28, 28], closeButton: true, closeOnClick: true });
       m.on("click", () => onSelect(c.id));
       group.addLayer(m);
     });
