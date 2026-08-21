@@ -3,7 +3,7 @@ import { MapContainer, TileLayer, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet.markercluster";
 import type { Company } from "../types";
-import { companyLetter, pinColor, escapeHtml } from "../utils";
+import { companyLetter, pinColor } from "../utils";
 
 interface Props {
   companies: Company[];
@@ -55,8 +55,9 @@ function FitBounds({ companies }: { companies: Company[] }) {
   const done = useRef(false);
   useEffect(() => {
     if (done.current || companies.length === 0) return;
+    // Fit to bounds at zoom 10 so clusters are visible & spiderfy gives a nice spread
     const bounds = L.latLngBounds(companies.map((c) => [c.lat, c.lng]));
-    map.fitBounds(bounds, { padding: [60, 60], maxZoom: 11, animate: false });
+    map.fitBounds(bounds, { padding: [60, 60], maxZoom: 10, animate: false });
     done.current = true;
   }, [companies, map]);
   return null;
@@ -102,36 +103,7 @@ function FlyToSelected({
   return null;
 }
 
-/* ---------- Build popup HTML for individual company pin ---------- */
-function buildPopupHtml(c: Company): string {
-  const name = escapeHtml(c.name);
-  const sector = escapeHtml(c.sector);
-  const area = escapeHtml(c.area);
-  const desc = escapeHtml(c.description?.slice(0, 140) ?? "");
-  const truncated = c.description && c.description.length > 140 ? "…" : "";
-  const roles = c.roles.map((r) => `<span class="role">${escapeHtml(r)}</span>`).join("");
-  const hiringBadge = c.hiring ? `<span class="hiring-badge">HIRING</span>` : "";
-  const websiteLink = c.website
-    ? `<a href="${escapeHtml(c.website)}" target="_blank" rel="noreferrer">Website →</a>`
-    : "";
-  return `
-    <div class="popup">
-      <div class="head">
-        <div class="name">${name}</div>
-        ${hiringBadge}
-      </div>
-      <div class="meta">${sector} · ${area}</div>
-      ${desc ? `<p class="desc">${desc}${truncated}</p>` : ""}
-      ${roles ? `<div class="roles">${roles}</div>` : ""}
-      <div class="links">
-        ${websiteLink}
-        <a href="#" class="popup-view-detail" data-id="${escapeHtml(c.id)}">View details →</a>
-      </div>
-    </div>
-  `;
-}
-
-/* ---------- Clustered markers with custom icon + popup + company metadata ---------- */
+/* ---------- Clustered markers — spiderfy on click ---------- */
 function ClusteredMarkers({
   companies, selectedId, onSelect,
 }: Props) {
@@ -140,39 +112,26 @@ function ClusteredMarkers({
 
   useEffect(() => {
     const group = L.markerClusterGroup({
-      maxClusterRadius: 45,
+      maxClusterRadius: 60,
+      // Click cluster -> spiderfy (spread pins outward like petals) at any zoom.
+      // We also disable zoomToBoundsOnClick so the map doesn't zoom in too far
+      // before spiderfy fires.
       spiderfyOnMaxZoom: true,
+      zoomToBoundsOnClick: false,
       showCoverageOnHover: false,
-      zoomToBoundsOnClick: true,
       iconCreateFunction: buildClusterIcon,
-      disableClusteringAtZoom: 12,
-      spiderfyDistanceMultiplier: 1.8,
+      // Don't disable clustering at any zoom — let spiderfy handle split
+      // (set to 20 = effectively disabled since we don't expect to zoom that far)
+      disableClusteringAtZoom: 20,
+      // Spread the spider legs a bit wider so 13 pins are clearly visible
+      spiderfyDistanceMultiplier: 1.6,
     });
     groupRef.current = group;
 
     companies.forEach((c) => {
       const m = L.marker([c.lat, c.lng], { icon: buildIcon(c, c.id === selectedId) });
       (m.options as { __company?: Company }).__company = c;
-      m.bindPopup(buildPopupHtml(c), {
-        maxWidth: 300,
-        minWidth: 260,
-        closeButton: true,
-        autoPan: true,
-        autoPanPadding: [20, 20],
-      });
       m.on("click", () => onSelect(c.id));
-      m.on("popupopen", (e) => {
-        const el = e.popup.getElement();
-        if (!el) return;
-        const viewBtn = el.querySelector(".popup-view-detail") as HTMLAnchorElement | null;
-        if (viewBtn) {
-          viewBtn.addEventListener("click", (ev) => {
-            ev.preventDefault();
-            onSelect(c.id);
-            m.closePopup();
-          });
-        }
-      });
       group.addLayer(m);
     });
 
