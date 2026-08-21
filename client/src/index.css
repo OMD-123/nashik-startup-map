@@ -179,41 +179,29 @@ body {
   color: #ffffff;
   font-weight: 800;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  border: 4px solid #ffffff;
+  border: 3px solid #ffffff;
   box-shadow:
     0 6px 18px rgba(255, 106, 26, 0.4),
     0 0 0 2px rgba(255, 106, 26, 0.25);
   cursor: pointer;
   transition: transform 0.15s ease;
-  position: relative;
 }
 .nashik-cluster:hover {
-  transform: scale(1.08);
+  transform: scale(1.1);
   box-shadow:
     0 10px 26px rgba(255, 106, 26, 0.55),
     0 0 0 3px rgba(255, 106, 26, 0.35);
 }
 .nashik-cluster .cluster-num {
-  font-size: 22px;
+  font-size: 18px;
   line-height: 1;
   letter-spacing: -0.03em;
   font-weight: 900;
 }
-.nashik-cluster .cluster-sub {
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  opacity: 0.95;
-  margin-top: 2px;
-  text-align: center;
-  line-height: 1.1;
-  max-width: 80%;
-}
-.nashik-cluster[style*="60px"] .cluster-num { font-size: 26px; }
-.nashik-cluster[style*="52px"] .cluster-num { font-size: 24px; }
+.nashik-cluster[style*="48px"] .cluster-num { font-size: 22px; }
+.nashik-cluster[style*="56px"] .cluster-num { font-size: 26px; }
 
 /* "hiring" pill at bottom-right of pin */
 .nashik-pin.hiring {

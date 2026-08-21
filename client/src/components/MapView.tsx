@@ -3,7 +3,7 @@ import { MapContainer, TileLayer, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet.markercluster";
 import type { Company } from "../types";
-import { companyLetter, pinColor } from "../utils";
+import { companyLetter, pinColor, escapeHtml } from "../utils";
 
 interface Props {
   companies: Company[];
@@ -32,30 +32,19 @@ function buildIcon(c: Company, isSelected: boolean): L.DivIcon {
   });
 }
 
-/* ---------- Cluster icon — shows TOTAL job count across the cluster ---------- */
+/* ---------- Cluster icon — single number = company count ---------- */
 function buildClusterIcon(cluster: L.MarkerCluster): L.DivIcon {
-  // Sum the open roles of every marker inside this cluster
   const markers = cluster.getAllChildMarkers();
-  let totalJobs = 0;
-  let hiringCount = 0;
-  for (const m of markers) {
-    const c = (m.options as { __company?: Company }).__company;
-    if (c) {
-      totalJobs += c.roles.length;
-      if (c.hiring) hiringCount++;
-    }
-  }
   const count = markers.length;
-  // Size by total jobs
-  const size = totalJobs >= 30 ? 60 : totalJobs >= 15 ? 52 : 44;
+  // Size scales with count
+  const size = count >= 10 ? 56 : count >= 5 ? 48 : 40;
   return L.divIcon({
     html: `
       <div class="nashik-cluster" style="width:${size}px;height:${size}px;">
-        <div class="cluster-num">${totalJobs}</div>
-        <div class="cluster-sub">${count} ${count === 1 ? "co" : "cos"} · ${totalJobs} jobs${hiringCount ? " · " + hiringCount + " hiring" : ""}</div>
+        <div class="cluster-num">${count}</div>
       </div>`,
     className: "",
-    iconSize: [size, size + 14],
+    iconSize: [size, size],
     iconAnchor: [size / 2, size / 2],
   });
 }
@@ -113,7 +102,36 @@ function FlyToSelected({
   return null;
 }
 
-/* ---------- Clustered markers with custom icon + company metadata ---------- */
+/* ---------- Build popup HTML for individual company pin ---------- */
+function buildPopupHtml(c: Company): string {
+  const name = escapeHtml(c.name);
+  const sector = escapeHtml(c.sector);
+  const area = escapeHtml(c.area);
+  const desc = escapeHtml(c.description?.slice(0, 140) ?? "");
+  const truncated = c.description && c.description.length > 140 ? "…" : "";
+  const roles = c.roles.map((r) => `<span class="role">${escapeHtml(r)}</span>`).join("");
+  const hiringBadge = c.hiring ? `<span class="hiring-badge">HIRING</span>` : "";
+  const websiteLink = c.website
+    ? `<a href="${escapeHtml(c.website)}" target="_blank" rel="noreferrer">Website →</a>`
+    : "";
+  return `
+    <div class="popup">
+      <div class="head">
+        <div class="name">${name}</div>
+        ${hiringBadge}
+      </div>
+      <div class="meta">${sector} · ${area}</div>
+      ${desc ? `<p class="desc">${desc}${truncated}</p>` : ""}
+      ${roles ? `<div class="roles">${roles}</div>` : ""}
+      <div class="links">
+        ${websiteLink}
+        <a href="#" class="popup-view-detail" data-id="${escapeHtml(c.id)}">View details →</a>
+      </div>
+    </div>
+  `;
+}
+
+/* ---------- Clustered markers with custom icon + popup + company metadata ---------- */
 function ClusteredMarkers({
   companies, selectedId, onSelect,
 }: Props) {
@@ -122,21 +140,39 @@ function ClusteredMarkers({
 
   useEffect(() => {
     const group = L.markerClusterGroup({
-      maxClusterRadius: 60,
+      maxClusterRadius: 45,
       spiderfyOnMaxZoom: true,
       showCoverageOnHover: false,
       zoomToBoundsOnClick: true,
       iconCreateFunction: buildClusterIcon,
-      // Disable clustering at zoom 13+ so individual pins are always visible when zoomed in
-      disableClusteringAtZoom: 13,
+      disableClusteringAtZoom: 12,
+      spiderfyDistanceMultiplier: 1.8,
     });
     groupRef.current = group;
 
     companies.forEach((c) => {
       const m = L.marker([c.lat, c.lng], { icon: buildIcon(c, c.id === selectedId) });
-      // Stash company reference on the marker for cluster counting
       (m.options as { __company?: Company }).__company = c;
+      m.bindPopup(buildPopupHtml(c), {
+        maxWidth: 300,
+        minWidth: 260,
+        closeButton: true,
+        autoPan: true,
+        autoPanPadding: [20, 20],
+      });
       m.on("click", () => onSelect(c.id));
+      m.on("popupopen", (e) => {
+        const el = e.popup.getElement();
+        if (!el) return;
+        const viewBtn = el.querySelector(".popup-view-detail") as HTMLAnchorElement | null;
+        if (viewBtn) {
+          viewBtn.addEventListener("click", (ev) => {
+            ev.preventDefault();
+            onSelect(c.id);
+            m.closePopup();
+          });
+        }
+      });
       group.addLayer(m);
     });
 
