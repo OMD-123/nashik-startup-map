@@ -537,6 +537,25 @@ body {
   flex-shrink: 0;
 }
 
+
+/* ---- Marker popups: one compact bubble per company ---- */
+.nashik-popup .leaflet-popup-content-wrapper { padding: 0; border-radius: 16px; overflow: hidden; box-shadow: 0 14px 36px rgba(15, 23, 42, 0.2); }
+.nashik-popup .leaflet-popup-content { width: 270px !important; margin: 0; }
+.nashik-popup .leaflet-popup-tip { box-shadow: 3px 3px 6px rgba(15, 23, 42, 0.08); }
+.nashik-map-popup { padding: 16px; color: #0f172a; }
+.popup-title-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.popup-kicker { color: #94a3b8; font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 4px; }
+.popup-company-name { font-size: 17px; font-weight: 850; line-height: 1.2; }
+.popup-sector { color: #64748b; font-size: 11px; margin-top: 5px; }
+.popup-description { color: #334155; font-size: 12px; line-height: 1.45; margin: 12px 0; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.popup-hiring { flex-shrink: 0; background: #dcfce7; color: #15803d; font-size: 9px; font-weight: 850; letter-spacing: .06em; padding: 4px 7px; border-radius: 999px; text-transform: uppercase; }
+.popup-role-list { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 12px; }
+.popup-role { background: #f1f5f9; border-radius: 999px; color: #334155; font-size: 10px; font-weight: 700; padding: 4px 7px; }
+.popup-role-more { background: #fff7ed; color: #c2410c; }
+.popup-actions { border-top: 1px solid #e2e8f0; display: flex; gap: 14px; padding-top: 11px; }
+.popup-actions a { color: #0f172a; font-size: 11px; font-weight: 800; text-decoration: none; }
+.popup-actions a:hover { color: #ea580c; }
+
 /* ---- Mobile ---- */
 @media (max-width: 760px) {
   .toolbar .search { min-width: 160px; }
