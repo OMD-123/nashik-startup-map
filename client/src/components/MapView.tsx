@@ -1,7 +1,6 @@
 import { useEffect, useRef } from "react";
 import { MapContainer, TileLayer, useMap } from "react-leaflet";
 import L from "leaflet";
-import "leaflet.markercluster";
 import type { Company } from "../types";
 import { companyLetter, pinColor } from "../utils";
 
@@ -34,7 +33,7 @@ function buildIcon(c: Company, isSelected: boolean): L.DivIcon {
 
 
 function escapeHtml(value: string): string {
-  return value.replace(/[&<>"\']/g, (char) => {
+  return value.replace(/[&<>"']/g, (char) => {
     if (char === "&") return "&amp;";
     if (char === "<") return "&lt;";
     if (char === ">") return "&gt;";
@@ -50,32 +49,15 @@ function buildPopupHtml(c: Company): string {
   return `<div class="nashik-map-popup"><div class="popup-title-row"><div><div class="popup-kicker">${escapeHtml(c.type)} · ${escapeHtml(c.area)}</div><div class="popup-company-name">${escapeHtml(c.name)}</div></div>${c.hiring ? `<span class="popup-hiring">Hiring</span>` : ""}</div><div class="popup-sector">${escapeHtml(c.sector)} · ${escapeHtml(c.stage)}</div><p class="popup-description">${escapeHtml(c.description)}</p>${c.roles.length ? `<div class="popup-role-list">${roles}${moreRoles}</div>` : ""}<div class="popup-actions">${website}<a href="https://www.openstreetmap.org/?mlat=${c.lat}&mlon=${c.lng}#map=15/${c.lat}/${c.lng}" target="_blank" rel="noreferrer">Directions <span aria-hidden="true">↗</span></a></div></div>`;
 }
 
-/* ---------- Cluster icon — single number = company count ---------- */
-function buildClusterIcon(cluster: L.MarkerCluster): L.DivIcon {
-  const markers = cluster.getAllChildMarkers();
-  const count = markers.length;
-  // Size scales with count
-  const size = count >= 10 ? 56 : count >= 5 ? 48 : 40;
-  return L.divIcon({
-    html: `
-      <div class="nashik-cluster" style="width:${size}px;height:${size}px;">
-        <div class="cluster-num">${count}</div>
-      </div>`,
-    className: "",
-    iconSize: [size, size],
-    iconAnchor: [size / 2, size / 2],
-  });
-}
-
 /* ---------- Helpers ---------- */
 function FitBounds({ companies }: { companies: Company[] }) {
   const map = useMap();
   const done = useRef(false);
   useEffect(() => {
     if (done.current || companies.length === 0) return;
-    // Fit to bounds at zoom 10 so clusters are visible & spiderfy gives a nice spread
+    // Fit to bounds so all companies are visible regardless of zoom level.
     const bounds = L.latLngBounds(companies.map((c) => [c.lat, c.lng]));
-    map.fitBounds(bounds, { padding: [60, 60], maxZoom: 10, animate: false });
+    map.fitBounds(bounds, { padding: [60, 60], maxZoom: 12, animate: false });
     done.current = true;
   }, [companies, map]);
   return null;
@@ -121,42 +103,38 @@ function FlyToSelected({
   return null;
 }
 
-/* ---------- Clustered markers — spiderfy on click ---------- */
-function ClusteredMarkers({
+/* ---------- All company markers — no clustering ---------- */
+function AllMarkers({
   companies, selectedId, onSelect,
 }: Props) {
   const map = useMap();
-  const groupRef = useRef<L.MarkerClusterGroup | null>(null);
+  const layerRef = useRef<L.LayerGroup | null>(null);
 
   useEffect(() => {
-    const group = L.markerClusterGroup({
-      maxClusterRadius: 60,
-      // Click cluster -> spiderfy (spread pins outward like petals) at any zoom.
-      // We also disable zoomToBoundsOnClick so the map doesn't zoom in too far
-      // before spiderfy fires.
-      spiderfyOnMaxZoom: true,
-      zoomToBoundsOnClick: false,
-      showCoverageOnHover: false,
-      iconCreateFunction: buildClusterIcon,
-      // Don't disable clustering at any zoom — let spiderfy handle split
-      // (set to 20 = effectively disabled since we don't expect to zoom that far)
-      disableClusteringAtZoom: 20,
-      // Spread the spider legs a bit wider so 13 pins are clearly visible
-      spiderfyDistanceMultiplier: 1.6,
-    });
-    groupRef.current = group;
+    // Use plain LayerGroup (no clustering) so every company shows as
+    // its own individual pin regardless of zoom. All 27 pins are
+    // visible at once — just like Google Maps business markers.
+    const layer = L.layerGroup();
+    layerRef.current = layer;
 
     companies.forEach((c) => {
       const m = L.marker([c.lat, c.lng], { icon: buildIcon(c, c.id === selectedId) });
       (m.options as { __company?: Company }).__company = c;
-      m.bindPopup(buildPopupHtml(c), { className: "nashik-popup", maxWidth: 300, minWidth: 240, autoPanPadding: [28, 28], closeButton: true, closeOnClick: true });
+      m.bindPopup(buildPopupHtml(c), {
+        className: "nashik-popup",
+        maxWidth: 300,
+        minWidth: 240,
+        autoPanPadding: [28, 28],
+        closeButton: true,
+        closeOnClick: true,
+      });
       m.on("click", () => onSelect(c.id));
-      group.addLayer(m);
+      layer.addLayer(m);
     });
 
-    map.addLayer(group);
+    map.addLayer(layer);
     return () => {
-      map.removeLayer(group);
+      map.removeLayer(layer);
     };
   }, [companies, selectedId, onSelect, map]);
 
@@ -179,7 +157,7 @@ export function MapView({ companies, selectedId, onSelect }: Props) {
       />
       <DistrictBoundary />
       <FitBounds companies={companies} />
-      <ClusteredMarkers companies={companies} selectedId={selectedId} onSelect={onSelect} />
+      <AllMarkers companies={companies} selectedId={selectedId} onSelect={onSelect} />
       <FlyToSelected companies={companies} selectedId={selectedId} />
     </MapContainer>
   );
